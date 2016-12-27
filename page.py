@@ -3,13 +3,22 @@
 
 import base
 import re
+from bs4 import BeautifulSoup
+from selenium import webdriver
+import time
 
 pageUrl="http://book.easou.com/w/read/8140825/10811075/1666.html"
-
-html = base.getHtml(pageUrl)
+browser = webdriver.PhantomJS()
+browser.get(pageUrl)
+# print(browser.page_source)
+html = browser.page_source
 # print(html)
-reStr='''>"\);</script>(.*?)<div class="footerbar">'''
-parttern= re.compile(reStr)
-items = parttern.findall(html)
-print(items[0])
+# reStr='''>"\);</script>(.*?)<div class="footerbar">'''
+# parttern= re.compile(reStr)
+# items = parttern.findall(html)
+# print(items[0])
+
+soup=BeautifulSoup(html, "html.parser")
+items= soup.select('div[class="content"]')
+print(items[0].get_text())
 
