@@ -20,5 +20,10 @@ html = browser.page_source
 
 soup=BeautifulSoup(html, "html.parser")
 items= soup.select('div[class="content"]')
-print(items[0].get_text())
+div = items[0]
+del div['class']
+del div['style']
+for i in  div.find_all(['div','script']):
+	i.extract()
+print(div)
 
