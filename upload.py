@@ -4,6 +4,7 @@ from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
 import urllib2
 import zipfile
+import epub
 
 
 
@@ -17,10 +18,10 @@ def upload_file(fileName):
 
 
 def write_epub():
-	epub = zipfile.ZipFile("testepub", 'w')
-	epub.writestr('mimetype','application/epub+zip',compress_type=zipfile.ZIP_STORED)
-	epub.writestr('META-INF/container.xml',' ', compress_type=zipfile.ZIP_STORED)
-	epub.writestr('OEBPS/content.opf', compress_type=zipfile.ZIP_STORED)
-	epub.close()
+	book = epub.open_epub('book.epub', u'w')
+	filename = r'dashengzhuan\add.xhtml'
+	manifest_item = epub.opf.ManifestItem(identifier='IdFile',href=r'dashengzhuan\add.xhtml',media_type='application/xhtml+xml')
+	book.add_item(filename, manifest_item)
+	book.close()
 
 write_epub()
