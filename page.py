@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 import time
 
+
 pageUrl="http://book.easou.com/w/read/8140825/10811075/1666.html"
 browser = webdriver.PhantomJS()
 browser.get(pageUrl)
@@ -25,5 +26,5 @@ del div['class']
 del div['style']
 for i in  div.find_all(['div','script']):
 	i.extract()
-print(div)
+print(div.prettify())
 
