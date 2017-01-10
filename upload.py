@@ -7,6 +7,94 @@ import zipfile
 import os.path
 
 
+class EpubUtil:
+	'generater epub file utils'
+
+	htmls=[]
+	metadata={}
+	epub=None
+
+	def __init__(self):
+		pass
+
+	def createEpub(self,path):
+		self.epub = zipfile.ZipFile(path, 'w')
+		self.epub.writestr("mimetype", "application/epub+zip")
+		self.epub.writestr("META-INF/container.xml", '''
+				<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+				  <rootfiles>
+				    <rootfile full-path="content.opf" media-type="application/oebps-package+xml"/>
+				  </rootfiles>
+				</container>
+			''');
+
+	def addItem(self,dirName,path):
+		# if(self.epub is None):
+		# 	raise Exception('epubutil must be createEpub before additem')
+		item={"dirName":dirName,"path":path}
+		self.htmls.append(item)
+
+	def setMetadata(self,title,creator,description):
+		self.metadata={"title":title,"creator":creator,"description":description}
+
+	def close(self):
+
+		metadata_tpl='''
+		    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+			  	<dc:title>%(title)s</dc:title>
+				<dc:creator>%(creator)s</dc:creator>
+				<dc:description>%(description)s</dc:description>	
+		  	</metadata>
+		'''
+
+		index_tpl = '''<?xml version='1.0' encoding='utf-8'?>
+		<package version="2.0" xmlns="http://www.idpf.org/2007/opf">
+		  %(metadata)s
+		  <manifest>
+		  	<item href="toc.ncx" media-type="application/x-dtbncx+xml" id="ncx"/>
+		    %(manifests)s
+		  </manifest>
+		  <spine toc="ncx">
+		    %(spines)s
+		  </spine>
+		</package>
+		'''
+		manifests=[]
+		spines=[]
+		navpoints =[]
+		for i,html in enumerate(self.htmls):
+			manifest='<item id="file_%d" href="%s" media-type="application/xhtml+xml"/>' %(i+1,html['path'])
+			spine='<itemref idref="file_%d" /> ' %(i+1,)
+			navpoint ='<navPoint id="file_%d" playOrder="%d"><navLabel><text>%s</text></navLabel><content src="%s"/></navPoint> ' %(i+1,i+1,html['dirName'],html['path'])
+			manifests.append(manifest)
+			spines.append(spine)
+			navpoints.append(navpoint)
+			#copy html
+			self.epub.write(html['path'], html['path'], compress_type=zipfile.ZIP_DEFLATED)
+
+
+		contentStr= index_tpl % {"manifests":''.join(manifests),"spines":''.join(spines),"metadata":metadata_tpl % self.metadata}
+		self.epub.writestr("content.opf", contentStr)
+
+
+		#toc.ncx
+		toc_tpl='''<?xml version='1.0' encoding='utf-8'?>
+			<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+			<head>
+			<meta content="test" name="dtb:uid"/>
+			<meta content="2" name="dtb:depth"/>
+			<meta content="test" name="dtb:generator"/>
+			<meta content="0" name="dtb:totalPageCount"/>
+			<meta content="0" name="dtb:maxPageNumber"/>
+			</head>
+			<navMap>
+				%(navpoint)s
+			</navMap></ncx>
+			'''
+		self.epub.writestr("toc.ncx", toc_tpl % {'navpoint':''.join(navpoints)} )
+
+		self.epub.close()
+
 
 def upload_file(fileName):
 	register_openers()
@@ -16,60 +104,14 @@ def upload_file(fileName):
 	print urllib2.urlopen(request).read()
 
 
+def main():
+	epubUtil=EpubUtil()
+	epubUtil.createEpub(r'd:\a.epub')
+	epubUtil.setMetadata('title_epub','fm','this is a test epub')
+	epubUtil.addItem('1zhang',r'book\1.html')
+	epubUtil.addItem('2zhang',r'book\2.html')
+	epubUtil.close()
 
-def write_epub():
-	# book = epub.open_epub('book.epub', u'w')
-	# filename = r'book\add.xhtml'
-	# manifest_item = epub.opf.ManifestItem(identifier='IdFile',href=r'books\add.xhtml',media_type='application/xhtml+xml')
-	# book.add_item(filename, manifest_item)
-	# book.close()
 
 
-	epub = zipfile.ZipFile('my_ebook.epub', 'w')
-	# The first file must be named "mimetype"
-	epub.writestr("mimetype", "application/epub+zip")
 
-	# The filenames of the HTML are listed in html_files
-	html_files = [r'book\foo.html', r'book\bar.html']
-
-	# We need an index file, that lists all other HTML files
-	# This index file itself is referenced in the META_INF/container.xml
-	# file
-	epub.writestr("META-INF/container.xml", '''<container version="1.0"
-	           xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
-	  <rootfiles>
-	    <rootfile full-path="OEBPS/Content.opf" media-type="application/oebps-package+xml"/>
-	  </rootfiles>
-	</container>''');
-
-	# The index file is another XML file, living per convention
-	# in OEBPS/Content.xml
-	index_tpl = '''<package version="2.0"
-	  xmlns="http://www.idpf.org/2007/opf">
-	  <metadata/>
-	  <manifest>
-	    %(manifest)s
-	  </manifest>
-	  <spine toc="ncx">
-	    %(spine)s
-	  </spine>
-	</package>'''
-
-	manifest = ""
-	spine = ""
-
-	# Write each HTML file to the ebook, collect information for the index
-	for i, html in enumerate(html_files):
-	    basename = os.path.basename(html)
-	    manifest += '<item id="file_%s" href="%s" media-type="application/xhtml+xml"/>' % (
-	                  i+1, basename)
-	    spine += '<itemref idref="file_%s" />' % (i+1)
-	    epub.write(html, 'OEBPS/'+basename)
-
-	# Finally, write the index
-	epub.writestr('OEBPS/Content.opf', index_tpl % {
-	  'manifest': manifest,
-	  'spine': spine,
-	})
-
-write_epub()
