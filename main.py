@@ -11,6 +11,7 @@ import json
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import time
+import sqlite3
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -104,7 +105,22 @@ def main():
 
 
 
-downloadpage('http://book.easou.com/w/read/8140825/10811075/1667.html',r'd:\a.txt')
+# downloadpage('http://book.easou.com/w/read/8140825/10811075/1667.html',r'd:\a.txt')
+
+
+conn = sqlite3.connect("test.db")
+# conn.execute('''CREATE TABLE t_user
+#        (ID INT PRIMARY KEY     NOT NULL,
+#        NAME           TEXT    NOT NULL,
+#        AGE            INT     NOT NULL,
+#        ADDRESS        CHAR(50));''')
+conn.execute('''insert into t_user values(1,'a',12,'abc')''');
+cursor = conn.execute("SELECT *  from t_user")
+table=PrettyTable(["id", "name","age","address"])  
+for row in cursor:
+	table.add_row(row)
+print(table)
+conn.commit()
 
 
 
