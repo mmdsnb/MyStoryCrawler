@@ -11,9 +11,14 @@ import json
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import time
-import sqlite3
+import storage
+import chardet
+import sys
 
 logging.basicConfig(level=logging.DEBUG)
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 
 def getbook(bookname):
 	searchUrl="http://book.easou.com/w/search.html?q=%s&sty=1&f=0"
@@ -100,27 +105,22 @@ def main():
 	bookurl= getbook('大圣传')
 	logging.debug('bookurl %s' %bookurl)
 	dirlist= getdir(bookurl)
-	print(len(dirlist))
-	print(dirlist[0][0])
+
+	bookIndexes=list()
+	for i in dirlist:
+		bookIndex=storage.BookIndex(unicode('大圣传'),unicode(i[1]),i[0])
+		bookIndexes.append(bookIndex)
+		
+	storage.addBookIndexes(bookIndexes)
 
 
 
+main()
 # downloadpage('http://book.easou.com/w/read/8140825/10811075/1667.html',r'd:\a.txt')
 
 
-conn = sqlite3.connect("test.db")
-# conn.execute('''CREATE TABLE t_user
-#        (ID INT PRIMARY KEY     NOT NULL,
-#        NAME           TEXT    NOT NULL,
-#        AGE            INT     NOT NULL,
-#        ADDRESS        CHAR(50));''')
-conn.execute('''insert into t_user values(1,'a',12,'abc')''');
-cursor = conn.execute("SELECT *  from t_user")
-table=PrettyTable(["id", "name","age","address"])  
-for row in cursor:
-	table.add_row(row)
-print(table)
-conn.commit()
+
+
 
 
 
