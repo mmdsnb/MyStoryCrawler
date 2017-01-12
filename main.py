@@ -104,8 +104,8 @@ def packageEpub(bookname,authorname):
 
 bookname='大圣传'
 # startIndex(bookname)
-startDownload(bookname)
-# packageEpub(bookname.encode('gbk'),'说梦者')
+# startDownload(bookname)
+packageEpub(bookname.encode('gbk'),'说梦者')
 
 
 
