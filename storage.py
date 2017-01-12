@@ -11,8 +11,12 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select
 from datetime import datetime
 import time
+import logging
+import sys
 
-
+logging.basicConfig(level=logging.DEBUG)
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 dbpath= os.path.dirname(inspect.stack()[0][1])+os.path.sep+'data.db'
 engine=sqlalchemy.create_engine(r'sqlite:///'+dbpath,echo=True)
@@ -55,29 +59,31 @@ def addBookIndexes(bookIndexes):
 
 
 def getBookIndexesByName(bookname):
+	print('abcdefg')
 	result =  session.query(BookIndex).filter_by(name=bookname).filter_by(status=0).order_by(BookIndex.id).all()
+	# session.commit()
 	return result
 
 def getBookIndexById(id):
-	result =  session.query(BookIndex).filter_by(id=id).first()
+	result =  session.query(BookIndex).filter(BookIndex.id==id).first()
+	# session.commit()
 	return result
 
 def updateStatusById(id):
 	session.query(BookIndex).filter_by(id=id).update({"status":2})
 	session.commit()
 
-def demo3():
-	result= session.query(BookIndex).filter_by(id=2).filter_by(name='a').all()
-	for u in result:
-		print(u.name)
 
 
 
 
-
-
-
-
+# lists= getBookIndexesByName(unicode('大圣传'))
+# index =1
+# for i in lists:
+# 	updateStatusById(i.id)
+# 	if(i==2):
+# 		break
+# 	index+=1
 
 
 

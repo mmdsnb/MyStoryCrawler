@@ -40,9 +40,10 @@ def getdir(bookurl):
 
 def downloadpage(pageUrl,file_name):
 	logging.debug('start download pageUrl: %s' %(pageUrl,))
-	browser = webdriver.PhantomJS()
-	browser.get(pageUrl)
-	html = browser.page_source
+	# browser = webdriver.PhantomJS()
+	# browser.get(pageUrl)
+	# html = browser.page_source
+	html = base.getHtml(pageUrl)
 	soup=BeautifulSoup(html, "html.parser")
 	items= soup.select('#TXT')
 	div = items[0]
@@ -72,6 +73,7 @@ def startIndex(bookname):
 	for i in dirlist:
 		bookIndex=storage.BookIndex(unicode(bookname),i[3].decode('gbk'),bookurl+i[1])
 		bookIndexes.append(bookIndex)
+		time.sleep(5)
 	
 	storage.addBookIndexes(bookIndexes)
 	logging.info('storage indexes end...')
@@ -81,9 +83,9 @@ def startIndex(bookname):
 def startDownload(bookname):
 	bookIndexes = storage.getBookIndexesByName(unicode(bookname))
 	for i in bookIndexes:
-		downloadpage(i.url,r"htmls/%d.html" %(i.id,))
+		# downloadpage(i.url,r"htmls/%d.html" %(i.id,))
 		storage.updateStatusById(i.id)
-
+		# pass
 
 
 def packageEpub(bookname,authorname):
