@@ -8,11 +8,10 @@
 
 ----------
 
-1. 变量的一些声明<pre><code>
-bookname='小说名'
-pinyinbookname='dashengzhuan'
+1. 变量的一些声明<pre><code>bookname='小说名'
+pinyinbookname='xiaoshuopinyingming'
 epubpath="books"+os.path.sep+pinyinbookname+".epub"
-uploadurl="http://192.168.199.179:12121/files" 
+uploadurl="http://xxx.xxx.xxx.xxx:12121/files" 
 </code></pre>
 2. `startIndex(bookname)` 用于根据小说名搜索小说列表，定位出小说的目录url，并检索出目录url，存入sqlite3
 3. `startDownload(bookname)` 根据第1步检索出的目录url，下载每个章节的小说内容
