@@ -13,6 +13,7 @@ from datetime import datetime
 import time
 import logging
 import sys
+import copy
 
 logging.basicConfig(level=logging.DEBUG)
 reload(sys)
@@ -58,32 +59,24 @@ def addBookIndexes(bookIndexes):
 	session.commit()	
 
 
-def getBookIndexesByName(bookname):
-	print('abcdefg')
-	result =  session.query(BookIndex).filter_by(name=bookname).filter_by(status=0).order_by(BookIndex.id).all()
-	# session.commit()
-	return result
-
 def getBookIndexById(id):
 	result =  session.query(BookIndex).filter(BookIndex.id==id).first()
-	# session.commit()
+	session.close()
 	return result
 
-def updateStatusById(id):
-	session.query(BookIndex).filter_by(id=id).update({"status":2})
+
+def getBookIndexesByName(bookname):
+	result =  session.query(BookIndex).filter_by(name=bookname).filter_by(status=0).order_by(BookIndex.id).all()
+	session.commit()
+	return result
+
+def updateStatus(bookIndex):
+	bookIndex.status=2
+	# session.query(BookIndex).filter_by(id=id).update({"status":2})
 	session.commit()
 
 
 
-
-
-# lists= getBookIndexesByName(unicode('大圣传'))
-# index =1
-# for i in lists:
-# 	updateStatusById(i.id)
-# 	if(i==2):
-# 		break
-# 	index+=1
 
 
 

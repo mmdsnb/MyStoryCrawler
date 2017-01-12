@@ -44,6 +44,8 @@ def downloadpage(pageUrl,file_name):
 	# browser.get(pageUrl)
 	# html = browser.page_source
 	html = base.getHtml(pageUrl)
+	if(html is None):
+		return
 	soup=BeautifulSoup(html, "html.parser")
 	items= soup.select('#TXT')
 	div = items[0]
@@ -73,7 +75,6 @@ def startIndex(bookname):
 	for i in dirlist:
 		bookIndex=storage.BookIndex(unicode(bookname),i[3].decode('gbk'),bookurl+i[1])
 		bookIndexes.append(bookIndex)
-		time.sleep(5)
 	
 	storage.addBookIndexes(bookIndexes)
 	logging.info('storage indexes end...')
@@ -83,8 +84,8 @@ def startIndex(bookname):
 def startDownload(bookname):
 	bookIndexes = storage.getBookIndexesByName(unicode(bookname))
 	for i in bookIndexes:
-		# downloadpage(i.url,r"htmls/%d.html" %(i.id,))
-		storage.updateStatusById(i.id)
+		downloadpage(i.url,r"htmls/%d.html" %(i.id,))
+		storage.updateStatus(i)
 		# pass
 
 
@@ -94,20 +95,24 @@ def packageEpub(bookname,authorname):
 	epubUtil.createEpub(epubpath)
 	epubUtil.setMetadata(bookname,authorname,'this epub created by mmdsnb.')
 	htmls =  os.listdir("htmls")
+	ids=list()
 	for i in htmls:
-		dirName=storage.getBookIndexById(i.split('.')[0]).dirName
-		epubUtil.addItem(dirName,'htmls'+os.path.sep+i)
+		ids.append(int(i.split('.')[0]))
+	ids.sort()
+	for i in ids:
+		dirName=storage.getBookIndexById(i).dirName
+		epubUtil.addItem(dirName,'htmls'+os.path.sep+"%d.html" % (i,))
 	epubUtil.close()
 
 
 bookname='大圣传'
 pinyinbookname='dashengzhuan'
 epubpath="books"+os.path.sep+pinyinbookname+".epub"
-uploadurl="http://192.168.1.111:12121/files"
+uploadurl="http://192.168.199.179:12121/files"
 # startIndex(bookname)
-startDownload(bookname)
+# startDownload(bookname)
 # packageEpub(pinyinbookname,'说梦者')
-# upload.uploadFile(epubpath,uploadurl)
+upload.uploadFile(epubpath,uploadurl)
 
 
 
