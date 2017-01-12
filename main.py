@@ -112,7 +112,7 @@ uploadurl="http://192.168.199.179:12121/files"
 # startIndex(bookname)
 # startDownload(bookname)
 # packageEpub(pinyinbookname,'说梦者')
-upload.uploadFile(epubpath,uploadurl)
+# upload.uploadFile(epubpath,uploadurl)
 
 
 
