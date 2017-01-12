@@ -92,7 +92,7 @@ def startDownload(bookname):
 
 def packageEpub(bookname,authorname):
 	epubUtil=upload.EpubUtil()
-	epubpath=os.path.dirname(inspect.stack()[0][1])+os.path.sep+'books'+os.path.sep+bookname+'.epub'
+	epubpath=os.path.dirname(inspect.stack()[0][1])+os.path.sep+"books"+os.path.sep+bookname+'.epub'
 	epubUtil.createEpub(epubpath)
 	epubUtil.setMetadata(bookname,authorname,'this epub created by mmdsnb.')
 	htmls =  os.listdir("htmls")
@@ -103,10 +103,13 @@ def packageEpub(bookname,authorname):
 
 
 bookname='大圣传'
+pinyinbookname='dashengzhuan'
+epubpath="books"+os.path.sep+pinyinbookname+".epub"
+uploadurl="http://192.168.1.111:12121/files"
 # startIndex(bookname)
 # startDownload(bookname)
-packageEpub(bookname.encode('gbk'),'说梦者')
-
+# packageEpub(pinyinbookname,'说梦者')
+# upload.uploadFile(epubpath,uploadurl)
 
 
 

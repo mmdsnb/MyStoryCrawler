@@ -6,6 +6,10 @@ import urllib2
 import zipfile
 import os.path
 import chardet
+import sys
+
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 class EpubUtil:
 	'generater epub file utils'
@@ -98,21 +102,13 @@ class EpubUtil:
 		self.epub.close()
 
 
-def upload_file(fileName):
+def uploadFile(fileName,url):
 	register_openers()
-	params = {"newfile": open(fileName, "rb")}
+	params = {"newfile": open(fileName, "rb"),"filename":"abc.epub"}
 	datagen, headers = multipart_encode(params)
-	request = urllib2.Request("http://192.168.1.112:12121/files", datagen, headers)
+	request = urllib2.Request(url, datagen, headers)
 	print urllib2.urlopen(request).read()
 
-
-def packageEpub(name):
-	epubUtil=EpubUtil()
-	epubUtil.createEpub(r'd:\a.epub')
-	epubUtil.setMetadata('title_epub','fm','this is a test epub')
-	epubUtil.addItem('1zhang',r'book\1.html')
-	epubUtil.addItem('2zhang',r'book\2.html')
-	epubUtil.close()
 
 
 
