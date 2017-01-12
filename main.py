@@ -1,6 +1,5 @@
 #!encoding:utf-8
 
-import page
 import upload
 import base
 import urllib
@@ -14,6 +13,7 @@ import time
 import storage
 import chardet
 import sys
+import inspect, os
 
 logging.basicConfig(level=logging.DEBUG)
 reload(sys)
@@ -21,105 +21,91 @@ sys.setdefaultencoding('utf8')
 
 
 def getbook(bookname):
-	searchUrl="http://book.easou.com/w/search.html?q=%s&sty=1&f=0"
+	searchUrl="http://zhannei.baidu.com/cse/search?q=%s&s=5342360055055406737&entry=1"
 	html = base.getHtml(searchUrl  % (bookname,))
-	reStr=""
-	reStr+="<div class=\"name\"><a class=\"common\" href=\"(/w/novel/.*?.html)\">(.*?)</a>"
-	reStr+='''<span class=".*?">.*?</span></div><div class="attr"><span class="author">作者：<a class="common" href="/w/searchAuthor/.*?.html">(.*?)</a>'''
+	reStr='''<a cpos="title" href="(.*?)" title="大圣传" class="result-game-item-title-link" target="_blank">.*?<span class="result-game-item-info-tag-title preBold">作者：</span><span>(.*?)</span>'''
 	parttern= re.compile(reStr)
 	items= parttern.findall(html)
-	table=PrettyTable(["url", "name","author"])  
+	return items[0][0];
 
-	bookurl=items[0][0]
-	for i in items:
-		table.add_row(i)
-
-	# logging.debug(table)
-	return bookurl
 
 def getdir(bookurl):
-	listUrl="http://book.easou.com%s" % (bookurl,)
-	html = base.getHtml(listUrl)
-	reStr=""
-	reStr+='''<a href="(/w/chapter/.*?)">查看目录</a>'''
+	html = base.getHtml(bookurl)
+	logging.info(html)
+	reStr='''<dd><a href=("|')(.*?.html)("|')>(.*?)</a></dd>'''
 	parttern= re.compile(reStr)
 	items= parttern.findall(html)
-	listAllUrl="http://book.easou.com"+items[0]
-	logging.debug('get dir listAllUrl:%s' %(listAllUrl,))
-	dirlist=list()
-	getalldir(listAllUrl,dirlist)
-	return dirlist
-	
-
-def getalldir(dirurl,dirlist):
-	logging.debug("start gethtml %s" %(dirurl,))
-	html = base.getHtml(dirurl)
-	reStr='''<a class="common" href="(/w/read/.*?.html)">(.*?)</a>'''
-	parttern= re.compile(reStr)
-	items= parttern.findall(html)
-	for i in items:
-		dirlist.append(i)
-
-	reStr='''(?<!</span>)<a class="common" href="(/w/chapter/.*?.html)" target="_self"><span class="next">下一页</span></a>'''
-	parttern= re.compile(reStr)
-	items= parttern.findall(html)
-	logging.debug("getalldir items %s" %(items))
-	if(len(items)==0):
-		return dirlist
-	else:
-		getalldir("http://book.easou.com"+items[0],dirlist)
+	return items
 
 
 def downloadpage(pageUrl,file_name):
+	logging.debug('start download pageUrl: %s' %(pageUrl,))
 	browser = webdriver.PhantomJS()
 	browser.get(pageUrl)
 	html = browser.page_source
 	soup=BeautifulSoup(html, "html.parser")
-	items= soup.select('div[class="content"]')
+	items= soup.select('#TXT')
 	div = items[0]
-	del div['class']
-	del div['style']
-	for i in  div.find_all(['div','script']):
-		i.extract()
-
+	content_tpl='''
+	<html>
+		<head>
+		  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		</head>
+		<body>
+			%(content)s
+		</body>
+	</html>
+	'''
 	contentStr=str(div.prettify().encode("utf-8"))
-	contentStr=contentStr.replace("<br>",'')
-	contentStr=contentStr.replace("</br>",'')
-	contentStr=contentStr.replace("<div>",'')
-	contentStr=contentStr.replace("</div>",'')
-	contentStr=contentStr.replace(" ",'')
 	output = open(file_name, 'w+')
-	output.writelines(contentStr)
-	contentlist=list()
-	for subline in contentStr.splitlines():
-		if(subline != '\n' and subline != ''):
-			contentlist.append(subline+"\n")
-		
-	contentStr="".join(contentlist)
-	print(contentStr)
+	output.writelines(content_tpl % {"content":contentStr})
 	output.close()
 
 
 
-def main():
-	bookurl= getbook('大圣传')
+def startIndex(bookname):
+	bookurl= getbook(bookname)
 	logging.debug('bookurl %s' %bookurl)
 	dirlist= getdir(bookurl)
-
+	logging.info('get indexes end...')
 	bookIndexes=list()
 	for i in dirlist:
-		bookIndex=storage.BookIndex(unicode('大圣传'),unicode(i[1]),i[0])
+		bookIndex=storage.BookIndex(unicode(bookname),i[3].decode('gbk'),bookurl+i[1])
 		bookIndexes.append(bookIndex)
-		
+	
 	storage.addBookIndexes(bookIndexes)
+	logging.info('storage indexes end...')
 
 
 
-main()
-# downloadpage('http://book.easou.com/w/read/8140825/10811075/1667.html',r'd:\a.txt')
+def startDownload(bookname):
+	bookIndexes = storage.getBookIndexesByName(unicode(bookname))
+	index=0
+	for i in bookIndexes:
+		print(index)
+		downloadpage(i.url,r"htmls/%d.html" %(i.id,))
+		if(index==10):
+			break
+		index+=1
 
 
 
+def packageEpub(bookname,authorname):
+	epubUtil=upload.EpubUtil()
+	epubpath=os.path.dirname(inspect.stack()[0][1])+os.path.sep+'books'+os.path.sep+bookname+'.epub'
+	epubUtil.createEpub(epubpath)
+	epubUtil.setMetadata(bookname,authorname,'this epub created by mmdsnb.')
+	htmls =  os.listdir("htmls")
+	for i in htmls:
+		dirName=storage.getBookIndexById(i.split('.')[0]).dirName
+		epubUtil.addItem(dirName,'htmls'+os.path.sep+i)
+	epubUtil.close()
+
+
+bookname='大圣传'
+# startIndex(bookname)
+startDownload(bookname)
+# packageEpub(bookname.encode('gbk'),'说梦者')
 
 
 

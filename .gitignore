@@ -3,5 +3,6 @@
 /*.epub
 /*.pdf
 /*.pyc
-/book
+/htmls
 /*.db
+/books

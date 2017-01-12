@@ -5,7 +5,7 @@ from poster.streaminghttp import register_openers
 import urllib2
 import zipfile
 import os.path
-
+import chardet
 
 class EpubUtil:
 	'generater epub file utils'
@@ -91,7 +91,9 @@ class EpubUtil:
 				%(navpoint)s
 			</navMap></ncx>
 			'''
-		self.epub.writestr("toc.ncx", toc_tpl % {'navpoint':''.join(navpoints)} )
+
+		navpointstr=toc_tpl % {'navpoint':''.join(navpoints)}
+		self.epub.writestr("toc.ncx", navpointstr.encode('utf-8') )
 
 		self.epub.close()
 
@@ -104,7 +106,7 @@ def upload_file(fileName):
 	print urllib2.urlopen(request).read()
 
 
-def main():
+def packageEpub(name):
 	epubUtil=EpubUtil()
 	epubUtil.createEpub(r'd:\a.epub')
 	epubUtil.setMetadata('title_epub','fm','this is a test epub')
