@@ -62,6 +62,9 @@ def getBookIndexById(id):
 	result =  session.query(BookIndex).filter_by(id=id).first()
 	return result
 
+def updateStatusById(id):
+	session.query(BookIndex).filter_by(id=id).update({"status":2})
+	session.commit()
 
 def demo3():
 	result= session.query(BookIndex).filter_by(id=2).filter_by(name='a').all()

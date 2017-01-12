@@ -80,13 +80,9 @@ def startIndex(bookname):
 
 def startDownload(bookname):
 	bookIndexes = storage.getBookIndexesByName(unicode(bookname))
-	index=0
 	for i in bookIndexes:
-		print(index)
 		downloadpage(i.url,r"htmls/%d.html" %(i.id,))
-		if(index==10):
-			break
-		index+=1
+		storage.updateStatusById(i.id)
 
 
 
@@ -107,7 +103,7 @@ pinyinbookname='dashengzhuan'
 epubpath="books"+os.path.sep+pinyinbookname+".epub"
 uploadurl="http://192.168.1.111:12121/files"
 # startIndex(bookname)
-# startDownload(bookname)
+startDownload(bookname)
 # packageEpub(pinyinbookname,'说梦者')
 # upload.uploadFile(epubpath,uploadurl)
 
