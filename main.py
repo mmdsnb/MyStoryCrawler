@@ -105,10 +105,10 @@ def packageEpub(bookname,authorname):
 	epubUtil.close()
 
 
-bookname='大圣传'
-pinyinbookname='dashengzhuan'
+bookname='小说名'
+pinyinbookname='xiaoshuopinyingming'
 epubpath="books"+os.path.sep+pinyinbookname+".epub"
-uploadurl="http://192.168.199.179:12121/files"
+uploadurl="http://xxx.xxx.xxx.xxx:12121/files"
 # startIndex(bookname)
 # startDownload(bookname)
 # packageEpub(pinyinbookname,'说梦者')
