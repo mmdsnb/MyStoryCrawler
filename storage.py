@@ -15,7 +15,7 @@ import logging
 import sys
 import copy
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -61,20 +61,21 @@ def addBookIndexes(bookIndexes):
 
 def getBookIndexById(id):
 	result =  session.query(BookIndex).filter(BookIndex.id==id).first()
-	session.close()
 	return result
 
 
 def getBookIndexesByName(bookname):
 	result =  session.query(BookIndex).filter_by(name=bookname).filter_by(status=0).order_by(BookIndex.id).all()
-	session.commit()
-	session.close()
 	return result
 
+def refreshobj(obj):
+	session.refresh(obj)
+
 def updateStatus(bookIndex):
-	bookIndex.status=2
-	# session.query(BookIndex).filter_by(id=id).update({"status":2})
+	# bookIndex.status=2
+	session.query(BookIndex).filter_by(id=bookIndex.id).update({"status":2})
 	session.commit()
+
 
 
 

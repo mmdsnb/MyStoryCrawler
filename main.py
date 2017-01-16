@@ -21,7 +21,7 @@ import multiprocessing
 from   multiprocessing import Pool
 
 
-logging.basicConfig(level=logging.WARN)
+logging.basicConfig(level=logging.DEBUG)
 reload(sys)
 sys.setdefaultencoding('utf8')
 mtime = base.Mytime()
@@ -52,7 +52,7 @@ def downloadpage(pageUrl, file_name):
 	# html = browser.page_source
 	html = base.getHtml(pageUrl)
 	if(html is None):
-		return
+		return False
 	soup = BeautifulSoup(html, "html.parser")
 	items = soup.select('#TXT')
 	div = items[0]
@@ -70,6 +70,7 @@ def downloadpage(pageUrl, file_name):
 	output = open(file_name, 'w+')
 	output.writelines(content_tpl % {"content": contentStr})
 	output.close()
+	return True
 
 
 def startIndex(bookname):
@@ -88,28 +89,34 @@ def startIndex(bookname):
 
 
 def subDownload(bookindex):
-	downloadpage(bookindex.url, r"htmls/%d.html" % (bookindex.id,))
-	# storage.updateStatus(bookindex)
+	if(bookindex is not None):
+		result= downloadpage(bookindex.url, r"htmls/%d.html" % (bookindex.id,))
+		if(result):
+			storage.updateStatus(bookindex)
 
 
 def startDownload(bookname):
 	bookIndexes = storage.getBookIndexesByName(unicode(bookname))
-	subc = len(bookIndexes) % 4
+	subc = len(bookIndexes) % 8
 	if(subc != 0):
-		for i in range(4 - subc):
+		for i in range(8 - subc):
 			bookIndexes.append(None)
 	matrix = numpy.array(bookIndexes)
-	matrix.shape = -1, 4
+	matrix.shape = -1, 8
 	pbar = tqdm.tqdm(range(len(matrix)))
 	manager = multiprocessing.Manager()
 	for i in pbar:
 		pool = Pool()
 		param=matrix[i]
-		print(param)
 		pool.map(subDownload,param)
 		pool.close()
 		pool.join()
-		break
+		# break
+	# pool=Pool()
+	# param=[bookIndexes[0]]
+	# pool.map(subDownload,param)
+	# pool.close()
+	# pool.join()
 		
 
 
