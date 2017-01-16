@@ -5,6 +5,8 @@ import time
 import os
 from   multiprocessing import Pool,Queue
 import multiprocessing
+import tqdm
+import numpy
 
 # This function could be any function to do other chores.
 
@@ -62,27 +64,51 @@ def func(msg):
 #     print "Sub-process(es) done."
 
 
-def booth(num,pname):
+def booth(param):
     while(True):
+        num=param[0]
+        pname=param[1]
         num.value+=1
         n=num.value
-        print(n)
-        if(n>=1000000):
+        print('%d %s' %(n,pname))
+        if(n>=10):
             return
         
 
 def test():
-    print('test')
+    num=1
+    while(True):
+        num+=1
+        print(num)
+        if(num>=100000):
+            return
 
+def processPrint():
+    print("process start")
 
-if __name__ == '__main__':
+def multiprocessingm():
     manager = multiprocessing.Manager()
-    pool=Pool()
+    pool=Pool(initializer=processPrint)
     num = manager.Value('d', 0.0)
-    pool.apply_async(booth,args=(num,'1'))
-    pool.apply_async(booth,args=(num,'2'))
+    inputs=[(num,'1')]
+    pool.map(booth,inputs)
+    # pool.apply_async(booth,args=(num,'2'))
     pool.close()
     pool.join()
+
     print("main process end")
+
+
+# if __name__ == '__main__':
+#     multiprocessingm()
+
+
+# list=range(16)
+# list.append(None)
+# np= numpy.array(list)
+# np.shape=-1,4
+# print(np)
+
+print(range(3))
 
 

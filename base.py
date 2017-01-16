@@ -2,6 +2,7 @@
 import urllib
 import urllib2
 import logging
+import time
 
 logging.basicConfig(level=logging.ERROR)
 def mutilLineToOne(strs):
@@ -25,8 +26,23 @@ def getHtml(url):
 
 	return None
 	
-	
+class Mytime:
+
+	current_time=time.time()
+
+	def init(self):
+		self.current_time=time.time()
+
+	def getsubtime(self,*prefix):
+		subtime=time.time()-self.current_time
+		self.current_time=time.time()
+		print("%s : %f" %(prefix,subtime))
 
 
-
+# my=Mytime()
+# my.init()
+# time.sleep(1)
+# my.getsubtime()
+# time.sleep(2)
+# my.getsubtime('a')
 

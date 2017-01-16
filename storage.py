@@ -20,7 +20,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 dbpath= os.path.dirname(inspect.stack()[0][1])+os.path.sep+'data.db'
-engine=sqlalchemy.create_engine(r'sqlite:///'+dbpath,echo=True)
+engine=sqlalchemy.create_engine(r'sqlite:///'+dbpath,echo=False)
 Base = declarative_base()
 
 
@@ -46,7 +46,7 @@ class BookIndex(Base):
 
 metadata=Base.metadata
 metadata.create_all(engine)
-session = sessionmaker(bind=engine)() 
+session = sessionmaker(bind=engine,autoflush=False)() 
 
 
 def addBookIndex(name,dirName,url):
@@ -68,6 +68,7 @@ def getBookIndexById(id):
 def getBookIndexesByName(bookname):
 	result =  session.query(BookIndex).filter_by(name=bookname).filter_by(status=0).order_by(BookIndex.id).all()
 	session.commit()
+	session.close()
 	return result
 
 def updateStatus(bookIndex):
