@@ -39,10 +39,13 @@ class Mytime:
 		print("%s : %f" %(prefix,subtime))
 
 
-# my=Mytime()
-# my.init()
-# time.sleep(1)
-# my.getsubtime()
-# time.sleep(2)
-# my.getsubtime('a')
 
+def tyield():
+	sumval=1
+	for i in range(5):
+		yield sumval
+		sumval=sumval+1
+	
+
+for i in tyield():
+	print(i)
